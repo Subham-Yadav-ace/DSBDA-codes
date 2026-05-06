@@ -1,0 +1,207 @@
+-- =========================================
+-- STEP 1 : Leave Safe Mode (Run in terminal)
+-- =========================================
+
+hdfs dfsadmin -safemode leave
+sudo -u hdfs hadoop dfsadmin -safemode leave
+
+
+-- =========================================
+-- STEP 2 : Start Hive
+-- =========================================
+
+hive
+
+
+-- =========================================
+-- STEP 3 : Create Database
+-- =========================================
+
+CREATE DATABASE flightdb;
+
+
+-- =========================================
+-- STEP 4 : Use Database
+-- =========================================
+
+USE flightdb;
+
+
+-- =========================================
+-- STEP 5 : Show Databases
+-- =========================================
+
+SHOW DATABASES;
+
+
+-- =========================================
+-- STEP 6 : Create Flight Table
+-- =========================================
+
+CREATE TABLE flight (
+    year INT,
+    month INT,
+    day INT,
+    flight_no STRING,
+    customer_id INT,
+    origin STRING,
+    dest STRING,
+    dep_delay INT
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS TEXTFILE;
+
+
+-- =========================================
+-- STEP 7 : Describe Flight Table
+-- =========================================
+
+DESCRIBE flight;
+
+
+-- =========================================
+-- STEP 8 : Insert Data into Flight Table
+-- =========================================
+
+INSERT INTO TABLE flight VALUES
+(2008,5,5,'AA123',101,'JFK','LAX',15),
+(2008,5,5,'DL456',102,'SFO','ORD',-5),
+(2008,5,6,'UA789',103,'SEA','DEN',0),
+(2008,5,6,'WN101',104,'DAL','HOU',120);
+
+
+-- =========================================
+-- STEP 9 : View Flight Table Data
+-- =========================================
+
+SELECT * FROM flight;
+
+
+-- =========================================
+-- STEP 10 : Alter Flight Table
+-- =========================================
+
+ALTER TABLE flight ADD COLUMNS (airline STRING);
+
+
+-- =========================================
+-- STEP 11 : Check Updated Table Structure
+-- =========================================
+
+DESCRIBE flight;
+
+
+-- =========================================
+-- STEP 12 : Create Folder in Terminal
+-- =========================================
+-- Run this in Linux terminal
+
+mkdir /home/cloudera/Desktop/customer_data
+
+
+-- =========================================
+-- STEP 13 : Create customer.txt File
+-- =========================================
+-- Path:
+/home/cloudera/Desktop/customer_data/customer.txt
+
+
+-- =========================================
+-- STEP 14 : Add Data to customer.txt
+-- =========================================
+
+101,Suraj,Pune
+102,Rahul,Mumbai
+103,Amit,Delhi
+104,Neha,Bangalore
+
+
+-- =========================================
+-- STEP 15 : Create EXTERNAL Customer Table
+-- =========================================
+
+CREATE EXTERNAL TABLE customer (
+    customer_id INT,
+    customer_name STRING,
+    city STRING
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS TEXTFILE
+LOCATION '/home/cloudera/Desktop/customer_data';
+
+
+-- =========================================
+-- STEP 16 : View Customer Table Data
+-- =========================================
+
+SELECT * FROM customer;
+
+
+-- =========================================
+-- STEP 17 : Insert New Record into Customer
+-- =========================================
+
+INSERT INTO TABLE customer VALUES
+(105,'Karan','Chennai');
+
+
+-- =========================================
+-- STEP 18 : View Updated Customer Table
+-- =========================================
+
+SELECT * FROM customer;
+
+
+-- =========================================
+-- STEP 19 : Join Flight and Customer Tables
+-- =========================================
+
+SELECT flight.flight_no,
+       customer.customer_name,
+       customer.city,
+       flight.dest,
+       flight.dep_delay
+
+FROM flight
+JOIN customer
+ON flight.customer_id = customer.customer_id;
+
+
+-- =========================================
+-- STEP 20 : Create Index on Flight Table
+-- =========================================
+
+CREATE INDEX flight_index
+ON TABLE flight (flight_no)
+AS 'org.apache.hadoop.hive.ql.index.compact.CompactIndexHandler'
+WITH DEFERRED REBUILD;
+
+
+-- =========================================
+-- STEP 21 : Rebuild Index
+-- =========================================
+
+ALTER INDEX flight_index ON flight REBUILD;
+
+
+-- =========================================
+-- STEP 22 : Show Index
+-- =========================================
+
+SHOW INDEX ON flight;
+
+
+-- =========================================
+-- STEP 23 : Find Average Departure Delay
+-- =========================================
+
+SELECT day,
+       AVG(dep_delay) AS avg_delay
+
+FROM flight
+
+WHERE year = 2008
+
+GROUP BY day;
