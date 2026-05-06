@@ -1,0 +1,161 @@
+1. To start leave the safe mode
+
+hdfs dfsadmin -safemode leave
+
+
+2. To start the hive enter:
+
+hive
+
+
+
+3.Create Database & Tables
+
+CREATE DATABASE flightdb;
+USE flightdb;
+
+
+4. To check the databases;
+
+show databases;
+
+
+5. Create Flight Table
+
+CREATE TABLE flight (
+    year INT,
+    month INT,
+    day INT,
+    flight_no STRING,
+    origin STRING,
+    dest STRING,
+    dep_delay INT
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS TEXTFILE;
+
+
+6. To check the table
+
+DESCRIBE flight;
+
+
+6. Adding data to the flight table
+
+INSERT INTO TABLE flight VALUES 
+(2026, 5, 5, 'AA123', 'JFK', 'LAX', 15),
+(2026, 5, 5, 'DL456', 'SFO', 'ORD', -5),
+(2026, 5, 6, 'UA789', 'SEA', 'DEN', 0),
+(2026, 5, 6, 'WN101', 'DAL', 'HOU', 120);
+
+
+7. Alter Table
+
+ALTER TABLE flight ADD COLUMNS (airline STRING);
+
+
+8. Dropping the Table
+
+DROP TABLE flight;
+
+
+-------------------------------------------------------------------
+
+---to start the hbase and hadoop
+
+sudo service hadoop-hdfs-namenode start
+sudo service hadoop-hdfs-datanode start
+sudo service hadoop-yarn-resourcemanager start
+sudo service hadoop-yarn-nodemanager start
+
+-- Then Start HBase
+
+sudo service hbase-master start
+sudo service hbase-regionserver start
+
+
+
+9. To enter the HBASE shell
+
+hbase shell
+
+
+10. Create Customer Table
+
+create 'customer', 'info'
+
+
+--------------------------------------------------------------------
+
+
+Load text file data to the new newflight table
+
+2. Create flight.txt text file in the Desktop insert this data
+
+1234,2008,pune,34.0
+1235,2008,pune,34.0
+1236,2008,pune,34.0
+1237,2008,pune,34.0
+
+
+
+4. creat new table newflight
+
+CREATE TABLE newflight (
+  fno INT,
+  year INT,
+  dest STRING,
+  delay FLOAT
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+LINES TERMINATED BY '\n'
+STORED AS TEXTFILE;
+
+
+5. Load Command (Correct Path)
+
+LOAD DATA LOCAL INPATH '/home/cloudera/Desktop/newflight.txt'
+INTO TABLE newflight;
+
+
+-------------------------------------------------------------------------
+
+
+Perform join: On the flight and newflight table on the common field and value like year = '2026'
+
+
+SELECT flight.year, flight.flight_no, newflight.dest, newflight.delay
+FROM flight
+JOIN newflight
+ON flight.year = newflight.year;
+
+
+
+-------------------------------------------------------------------------
+
+1. STEP 6: Create Index (Point 4)
+
+CREATE INDEX flight_index
+ON TABLE flight (flight_no)
+AS 'COMPACT'
+WITH DEFERRED REBUILD;
+
+
+---------------------------------------------------------------------
+
+
+STEP 7: Average Departure Delay (Point 5)
+
+
+SELECT day, AVG(dep_delay) AS avg_delay
+FROM flight
+WHERE year = 2026
+GROUP BY day;
+
+
+
+
+
+

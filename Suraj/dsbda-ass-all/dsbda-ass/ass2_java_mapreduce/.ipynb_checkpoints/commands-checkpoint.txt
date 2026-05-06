@@ -1,0 +1,19 @@
+1. To leave safe mode
+sudo -u hdfs hadoop dfsadmin -safemode leave
+
+
+2. Copy the input.txt file from the desktop to hadoop
+hadoop fs -put Desktop/input.txt words.txt
+
+3. To check the file input.txt is present 
+hadoop fs -ls
+
+4. To run a jar file name with WordCount.jar
+hadoop jar WordCount.jar WordCount.WordCount words.txt output.txt
+
+5. Check the output.txt
+hadoop fs -cat output.txt/part-r-00000
+
+
+
+
